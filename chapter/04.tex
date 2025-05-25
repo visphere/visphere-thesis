@@ -1,0 +1,326 @@
+\makechapter{Interfejs użytkownika}{chap:ui}
+
+\makesection{Logowanie i rejestracja}{sec:ui-auth}
+
+Na \imgref{fig:login-form} przedstawione jest okno logowania. Umożliwia ono zalogowanie standardowe oraz zalogowanie
+przy użyciu konta \textit{Google} lub \textit{Facebook}. Użytkownik jako login może podać nazwę użytkownika lub adres
+email przypisany do konta co sugeruje nazwa kontrolki formularza. Pola \textit{Nazwa użytkownika lub adres email} oraz
+\textit{Hasło} zostały celowo rozdzielone, aby przeciwdziałać masowym próbom logowania dokonywanym przez boty w celu
+unieruchomienia systemu.
+%
+\begin{figure}[H]
+  \centering
+  \safeincludepng{4_1/0_1_login_form}{0.9}
+  \caption{Formularz logowania użytkownika.}
+  \label{fig:login-form}
+\end{figure}
+
+Zalogowanie poprzez konto \textit{Google} lub \textit{Facebook} rozpoczyna się od kliknięcia widocznego przycisku na
+\imgref{fig:login-form}. Przeglądarka przekierowuje użytkownika na stronę dostarczyciela poświadczeń. Po wprowadzeniu
+danych i weryfikacji przez zewnętrzny serwer \textit{Google} lub \textit{Facebook} następuje przekierowanie powrotne do
+aplikacji i (jeśli nie wystąpił błąd) zalogowanie użytkownika.
+
+Sam formularz rejestracji (\imgref{fig:register-form}) podzielony został na dwa etapy, gdzie w pierwszym użytkownik
+podaje najważniejsze dane identyfikujące go w systemie. W drugim etapie użytkownik może między innymi włączyć
+uwierzytelnianie wieloetapowe które będzie musiał skonfigurować przy pierwszym logowaniu do systemu.
+%
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}[b]{0.48\textwidth}
+    \centering
+    \safeincludepng{4_1/0_2_register_form_first}{1}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[b]{0.48\textwidth}
+    \centering
+    \safeincludepng{4_1/0_2_register_form_second}{1}
+  \end{subfigure}
+  \caption{Dwuetapowy formularz rejestracji.}
+  \label{fig:register-form}
+\end{figure}
+
+Po wypełnieniu formularza rejestracji użytkownik musi poprawnie przejść weryfikację Captcha. Zaimplementowano ją w celu
+przeciwdziałania masowego tworzeniu pustych kont przez boty (\imgref{fig:register-captcha}). Gdy rejestracja przebiegła
+pomyślnie, na podaną skrzynkę email wysyłany jest kod aktywujący konto (\imgref{fig:activate-email-form}). Konto takie
+można aktywować w przeciągu 48 godzin. Nieaktywowane konto po tym czasie zostanie usunięte z systemu.
+%
+\begin{figure}[H]
+  \centering
+  \safeincludepng{4_1/0_3_register_captcha}{0.7}
+  \caption{Okno z polem \textit{Captcha}.}
+  \label{fig:register-captcha}
+\end{figure}
+%
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}[b]{0.53\textwidth}
+    \centering
+    \safeincludepng{4_1/0_4_activate_email_first}{1}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[b]{0.43\textwidth}
+    \centering
+    \safeincludepng{4_1/0_4_activate_form_second}{1}
+  \end{subfigure}
+  \caption{Email z potwierdzeniem aktywacji konta oraz formularz aktywacji.}
+  \label{fig:activate-email-form}
+\end{figure}
+
+\makesection{Uwierzytelnianie wieloetapowe}{sec:ui-auth-mfa}
+
+Gdy użytkownik podczas rejestracji zaznaczył opcję włączenia uwierzytelniania wieloetapowego, przy pierwszym logowaniu
+zostanie poproszony o dokończenie konfiguracji. Odbywa się to poprzez skan kodu QR lub ręcznym zarejestrowaniem tajnego
+klucza w aplikacji \textit{Authenticator}. Klucz taki można dodatkowo pobrać w formie pliku tekstowego przy użyciu
+przycisku z etykietą \textit{Zapisz do pliku}. Pierwsze etapy konfigurowania uwierzytelniania wieloskładnikowego
+widoczne są na \imgref{fig:mfa-settings}.
+%
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}[b]{0.48\textwidth}
+    \centering
+    \safeincludepng{4_2/0_1_mfa_settings_first}{1}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[b]{0.48\textwidth}
+    \centering
+    \safeincludepng{4_2/0_1_mfa_settings_second}{1}
+  \end{subfigure}
+  \caption{Pierwszy etap konfiguracji uwierzytelniania wieloskładnikowego.}
+  \label{fig:mfa-settings}
+\end{figure}
+
+Po udanej konfiguracji, aplikacja \textit{Microsoft Authenticator} sekwencyjnie co pewien okres będzie generowała kody.
+Przy kolejnym logowaniu będzie należało podać ważny kod z aplikacji. Na \imgref{fig:mfa-settings-third} przedstawiono
+okno konfiguracji a na \imgref{fig:mfa-authenticator-app} zrzut ekranu telefonu z aplikacją \textit{Microsoft
+  Authenticator}. Aplikacja \textit{Visphere} jest zarejestrowana i co 30 sekund generowany jest nowy kod możliwy do
+użycia w celu dodatkowego potwierdzenia tożsamości przy procedurze logowania. W przypadku utracenia dostępu do aplikacji
+\textit{Authenticator} możliwe jest również zalogowanie się z wykorzystaniem jednorazowego tokenu wysyłanego w
+wiadomości email i ponowne jej skonfigurowanie.
+%
+\begin{figure}[H]
+  \centering
+  \safeincludepng{4_2/0_2_mfa_settings_third}{0.42}
+  \caption{Końcowy etap konfiguracji uwierzytelniania wieloetapowego.}
+  \label{fig:mfa-settings-third}
+\end{figure}
+%
+\begin{figure}[H]
+  \centering
+  \safeincludepng{4_2/0_3_mfa_authenticator_app}{0.42}
+  \caption{Okno aplikacji \textit{Microsoft Authenticator}.}
+  \label{fig:mfa-authenticator-app}
+\end{figure}
+
+\makesection{Reset hasła z wykorzystaniem jednorazowego kodu}{sec:ui-password-reset}
+
+W celu zresetowania hasła należy w formularzu (\imgref{fig:password-reset}) wpisać nazwę użytkownika lub adres email,
+aby serwer wysłał wiadomość z kodem (\imgref{fig:password-reset-change}).
+%
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}[b]{0.45\textwidth}
+    \centering
+    \safeincludepng{4_3/0_1_password_reset_first}{1}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[b]{0.45\textwidth}
+    \centering
+    \safeincludepng{4_3/0_1_password_reset_second}{1}
+  \end{subfigure}
+  \caption{Pierwszy etap konfiguracji uwierzytelniania wieloskładnikowego.}
+  \label{fig:password-reset}
+\end{figure}
+%
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}[b]{0.45\textwidth}
+    \centering
+    \safeincludepng{4_3/0_2_password_change_email}{1}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[b]{0.45\textwidth}
+    \centering
+    \safeincludepng{4_3/0_2_password_change}{1}
+  \end{subfigure}
+  \caption{Pierwszy etap konfiguracji uwierzytelniania wieloskładnikowego.}
+  \label{fig:password-reset-change}
+\end{figure}
+
+Po wysłaniu prośby o zmianę hasła aplikacja nie informuje użytkownika, czy dana osoba istnieje a jedynie (ze względów
+bezpieczeństwa) podaje informację, że podjęto próbę wysłania wiadomości. Kod z wiadomości email należy przepisać w
+formularzu (\imgref{fig:password-reset}) lub kliknąć w link. System wówczas przekieruje na stronę z formularzem
+umożliwiającym zmianę hasła (\imgref{fig:password-reset-change}). Sama procedura zmiany hasła dostępna jest jedynie dla
+kont lokalnym tj. założonych w aplikacji przy użyciu standardowego formularza rejestracji widocznego na
+\imgref{fig:register-form}.
+
+\makesection{Edycja profilu użytkownika}{sec:ui-profile-edit}
+
+Na \imgref{fig:user-settings} widoczny jest fragment ustawień użytkownika umożliwiający zmianę podstawowych parametrów
+konta, tj. zmiana hasła, włączenie lub wyłączenie weryfikacji dwuetapowej oraz wyłączenie i usunięcie konta. Konto
+wyłączone w każdej chwili można przywrócić, a dane oraz ustawienia użytkownika nie są tracone. Przycisk usunięcia konta
+usuwa je trwale z systemu. Dodatkowo użytkownik może zdecydować, czy po usunięciu lub zablokowaniu konta wszystkie jego
+wiadomości ze wszystkich kanałów tekstowych mają zostać usunięte. W przypadku nieusunięcia wiadomości, ich autor będzie
+oznaczony jako \textit{Użytkownik usunięty}.
+%
+\begin{figure}[H]
+  \centering
+  \safeincludepng{4_4/0_1_user_settings}{0.8}
+  \caption{Fragment ustawień konta użytkownika.}
+  \label{fig:user-settings}
+\end{figure}
+
+Z kolei na \imgref{fig:user-settings-colors} widoczne są ustawienia wyglądu profilu i możliwość wgrania własnego
+zdjęcia, wygenerowania identikonu\footnote{Identikon, z ang. \english{identicon} — geometryczny obrazek generowany na
+  podstawie wartości zdefiniowanych przez funkcję skrótu wykonywaną na nazwie użytkownika aplikacji.} oraz usunięcia
+zdjęcia (przywrócenie domyślnego zdjęcia z inicjałami). Wgrywanie zdjęcia odbywa się poprzez okno umożliwiające
+załadowanie grafiki i wykadrowanie jej przed wysłaniem na serwer (\imgref{fig:add-crop-image}).
+%
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}[b]{0.45\textwidth}
+    \centering
+    \safeincludepng{4_4/0_3_add_image}{1}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[b]{0.45\textwidth}
+    \centering
+    \safeincludepng{4_4/0_3_crop_image}{1}
+  \end{subfigure}
+  \caption{Okno umożliwiające wgranie i wykadrowanie zdjęcia profilowego.}
+  \label{fig:add-crop-image}
+\end{figure}
+%
+\begin{figure}[H]
+  \centering
+  \safeincludepng{4_4/0_2_user_settings_colors}{0.9}
+  \caption{Ustawienia profilu użytkownika (zdjęcie oraz kolor wiodący).}
+  \label{fig:user-settings-colors}
+\end{figure}
+
+\makesection{Wsparcie dla wielu języków (internacjonalizacja aplikacji)}{sec:ui-i18n}
+
+System posiada pełne wsparcie z zakresu internacjonalizacji dla języka polskiego oraz angielskiego w dialekcie
+amerykańskim. Oprócz wyświetlania samego interfejsu użytkownika w wybranym języku dostosowuje on również format dat do
+wybranego kraju. Widoczne to jest na \imgref{fig:lang-comparison}. Każdy użytkownik może przypisać wybrany język do
+konta w aplikacji, dzięki czemu, gdy zaloguje się na innym urządzeniu na to konto, interfejs będzie wyświetlany zgodnie
+z wybranym wcześniej językiem (\imgref{fig:change-language}).
+%
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}[b]{0.40\textwidth}
+    \centering
+    \safeincludepng{4_5/0_1_lang_comparison_en}{1}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[b]{0.40\textwidth}
+    \centering
+    \safeincludepng{4_5/0_1_lang_comparison_pl}{1}
+  \end{subfigure}
+  \caption{Wyświetlanie treści oraz dat w różnych językach.}
+  \label{fig:lang-comparison}
+\end{figure}
+%
+\begin{figure}[H]
+  \centering
+  \safeincludepng{4_5/0_2_change_language}{0.9}
+  \caption{Zakładka umożliwiająca zmianę ustawień językowych.}
+  \label{fig:change-language}
+\end{figure}
+
+\makesection{Główne okno aplikacji}{sec:ui-main-window}
+
+Główne okno aplikacji podzielone jest na kilka modułów (\imgref{fig:main-view}). Moduły 1 oraz 4 są niezmienne dla
+wszystkich \textit{Sfer} natomiast zawartość modułów od 2, 3 oraz 5 zmienia się w zależności od wybranej \textit{Sfery}.
+Poszczególne moduły reprezentują:
+%
+\begin{enumerate}
+  \item moduł wszystkich \textit{Sfer} użytkownika (własne oraz te do których dołączył),
+  \item moduł kanałów tekstowych wybranej \textit{Sfery},
+  \item moduł wiadomości wybranego kanału tekstowego z modułu 2,
+  \item moduł pola wprowadzania wiadomości oraz opcjonalnych plików (załączników),
+  \item moduł widocznych członków \textit{Sfery} z wyodrębnieniem właściciela.
+\end{enumerate}
+
+Dodatkowo na \imgref{fig:main-view} widoczne jest okno typu popup. Otwiera się je po kliknięciu na wybranego użytkownika
+z modułu 5. Jeśli wybrany użytkownik jest członkiem \textit{Sfery}, to dla administratora widoczne są przyciski które
+umożliwiają jego wyrzucenie, zablokowanie oraz oddelegowanie \textit{Sfery}. Procedura oddelegowania polega na
+przekazaniu praw innemu użytkownikowi, który wówczas staje się administratorem serwera. Funkcja ta może zostać użyta w
+przypadku chęci usunięcia konta w aplikacji przez właściciela \textit{Sfer}, ale bez usuwania tych \textit{Sfer}
+(program nie pozwoli usunąć konta, jeśli użytkownik będzie zarządcą przynajmniej jednej \textit{Sfery}).
+%
+\begin{figure}[H]
+  \centering
+  \safeincludepng{4_6/0_1_main_view}{1}
+  \caption{Główne okno aplikacji z wydzielonymi modułami.}
+  \label{fig:main-view}
+\end{figure}
+
+\makesection{Wysyłanie wiadomości tekstowych wraz z załączonymi plikami}{sec:ui-messages-with-files}
+
+Aplikacja zgodnie z założeniami umożliwia dołączanie do wiadomości plików. W jednej wiadomości może być maksymalnie 5
+plików z czego każdy plik może ważyć maksymalne 20 MB. Jak widać na \imgref{fig:append-file} pliki graficzne wyświetlane
+są jako podgląd. Pozostałe pliki widoczne są jedynie w formie bloku z typem pliku oraz przyciskiem umożliwiającym
+pobranie ich na komputer.
+%
+\begin{figure}[H]
+  \centering
+  \safeincludepng{4_7/0_1_append_file}{1}
+  \caption{Pole wprowadzania wiadomości tekstowej wraz z widocznymi plikami.}
+  \label{fig:append-file}
+\end{figure}
+
+Dodawanie plików odbywa się poprzez przycisk \textit{+} lub wykonanie procedury wklejania zasobu przy użyciu skrótu
+klawiaturowego \verb|Ctrl+V| w polu wpisywania wiadomości. Wszystkie zasoby dodawane do wiadomości pojawiają się w
+dolnej przewijanej liście i możliwa jest ich edycja (usunięcie lub dodanie nowego zasobu) przed opublikowaniem
+wiadomości (\imgref{fig:main-view-files}). Każdą wysłaną wiadomość może usunąć jej autor oraz administrator
+\textit{Sfery}.
+%
+\begin{figure}[H]
+  \centering
+  \safeincludepng{4_7/0_2_main_view_files}{1}
+  \caption{Główne okno kanału tekstowego z widocznymi wiadomościami w formie plików.}
+  \label{fig:main-view-files}
+\end{figure}
+
+\makesection{Tworzenie i dołączanie do \textit{Sfery}}{sec:ui-create-and-join-sphere}
+
+Po zalogowaniu użytkownik ma możliwość stworzenia \textit{Sfery} (serwera zawierającego kanały komunikacyjne). Może
+określić jej nazwę, kategorię oraz widoczność (\imgref{fig:create-sphere}). Do \textit{Sfery} prywatnej mogą dołączać
+tylko osoby z zaproszeniem. Do \textit{Sfery} publicznej może dołączyć każdy posiadający konto w aplikacji. Na
+\imgref{fig:join-links} widoczna jest zakładka do generowania linków umożliwiających dołączenie. Każdy taki link może
+mieć określony czas wygaśnięcia oraz nazwę. Dodatkowo link można tymczasowo wyłączyć. Kod z linku może zostać
+wykorzystany w oknie umożliwiającym dołączenie do Sfery (\imgref{fig:join-to-sphere}).
+%
+\begin{figure}[H]
+  \centering
+  \safeincludepng{4_8/0_1_create_sphere}{0.6}
+  \caption{Okno umożliwiające stworzenie \textit{Sfery}.}
+  \label{fig:create-sphere}
+\end{figure}
+%
+\begin{figure}[H]
+  \centering
+  \safeincludepng{4_8/0_2_join_to_sphere}{0.5}
+  \caption{Okno umożliwiające dołączenie do prywatnej \textit{Sfery} z użyciem kodu.}
+  \label{fig:join-to-sphere}
+\end{figure}
+%
+\begin{figure}[H]
+  \centering
+  \safeincludepng{4_8/0_3_join_links}{0.9}
+  \caption{Zakładka wygenerowanych linków.}
+  \label{fig:join-links}
+\end{figure}
+
+\makesection{Tworzenie kanału tekstowego}{sec:ui-create-text-channel}
+
+W każdej \textit{Sferze} zarządca możne tworzyć, modyfikować oraz usuwać kanały tekstowe. W celu stworzenia kanału
+tekstowego należy podać jego nazwę (\imgref{fig:create-text-channel}). Każdy taki kanał można usunąć wraz ze wszystkimi
+wiadomościami znajdującymi się na nim. Po stworzeniu, kanał tekstowy pojawi się w module 2 (\imgref{fig:main-view}).
+%
+\begin{figure}[H]
+  \centering
+  \safeincludepng{4_9/0_1_create_text_channel_modal}{0.6}
+  \caption{Okno umożliwiające stworzenie \textit{Sfery}.}
+  \label{fig:create-text-channel}
+\end{figure}

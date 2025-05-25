@@ -1,0 +1,526 @@
+\makechapter{Architektura systemu}{chap:system-architecture}
+
+\makesection{Zarys ogólnej architektury systemu}{sec:architecture-overview}
+
+System podzielony jest na dwie główne warstwy: warstwę klienta oraz serwera. Warstwa klienta napisana jest z
+wykorzystaniem \textit{frameworka} \textit{Angular} w języku \textit{Typescript} oraz biblioteki \textit{Tailwind}, a
+warstwa serwera z wykorzystaniem \textit{frameworka} \textit{Spring} oraz języka \textit{Java} w architekturze
+rozproszonej (mikroserwisowej). Warstwy systemu komunikują się ze sobą przy pomocy protokołu \textit{HTTP} oraz
+\textit{Websocket} w zależności od funkcjonalności. Sam sposób komunikacji przy pomocy protokołu \textit{HTTP} został
+zrealizowany poprzez bezstanową specyfikację \textit{REST}.
+
+\makesection{Infrastruktura warstwy klienta}{sec:client-infra}
+
+Infrastruktura warstwy klienta (\imgref{fig:client-infra}) składa się z dwóch głównych elementów: aplikacji klienta
+uruchamianej na serwerze \textit{HTTP} (\textit{Nginx}) oraz serwera typu \textit{S3} przechowującego statyczne pliki
+(obrazy, czcionki, pliki tłumaczeń itp.). Sama aplikacja jest aplikacją webową, toteż komunikacja z nią odbywa się
+poprzez przeglądarkę internetową z wykorzystaniem protokołu \textit{HTTP} oraz \textit{Websocket}. Zarówno aplikacja
+klienta, jak i infrastruktura serwerowa korzystają z zasobów serwera \textit{S3} udostępnianych poprzez protokół
+\textit{HTTP}. Komunikacja z warstwą serwerową odbywa się jedynie poprzez główną bramę \textit{API} z uwagi na
+zastosowanie architektury rozproszonej.
+%
+\begin{figure}[H]
+  \centering
+  \safeincludesvg{3_2/0_1_client_infra}{0.9}
+  \caption{Infrastruktura warstwy klienta.}
+  \label{fig:client-infra}
+\end{figure}
+
+Przechowywanie zasobów statycznych na osobnym serwerze \textit{S3} niesie za sobą szereg korzyści. Jedną z nich jest
+odciążenie głównego serwera aplikacji klienta poprzez zastosowanie sieci \textit{CDN}. Węzły takiej sieci rozlokowane w
+wielu centrach danych na całym świecie znacząco skracają czas pobierania zasobów przez wielu użytkowników jednocześnie z
+różnych części świata.
+
+\makesubsection{Zastosowanie \textit{frameworka} \textit{Angular} jako systemu \textit{SPA}}{sub:client-infra-angular}
+
+Warstwa klienta została zrealizowana z wykorzystaniem \textit{frameworka} \textit{Angular}. \textit{Framework} ten
+stworzony został przez firmę \textit{Google} i jest jednocześnie następcą powstałego w 2010 roku \textit{AngularJS}.
+Umożliwia on budowanie jednostronicowych aplikacji internetowych (\textit{SPA}), czyli takich, w których zapytania do
+serwera wykonywane są w technologii \textit{AJAX} bez potrzeby każdorazowego przeładowania strony. W przeciwieństwie do
+poprzednika korzysta on z języka \textit{Typescript} co znacznie ułatwia utrzymywanie i debugowanie dużych aplikacji z
+uwagi na system typów. Sam \textit{framework} działa bazując na architekturze komponentowej, z widocznym wydzieleniem na
+warstwę logiki biznesowej oraz widoku \cite{bib:ts-fain-2019}.
+
+Aplikacja klienta została podzielona na kilka leniwie (ang. \english{lazy}) ładowanych modułów (tj. ładowanych, dopiero
+gdy wybrana podstrona korzysta z kodu modułu — \imgref{fig:client-modules}). Ogranicza to ilość potrzebnych plików do
+załadowania przy starcie aplikacji, co znacznie skraca czas jej uruchamiania. Same moduły zostały podzielone pod
+względem funkcjonalnym na odpowiednio: \english{auth} (uwierzytelnianie), \english{client} (moduł aplikacji głównej),
+\english{settings} (moduł ustawień aplikacji) oraz \english{shared} (wspólne komponenty dla wszystkich modułów).
+%
+\begin{figure}[H]
+  \centering
+  \safeincludesvg{3_2/1_1_client_modules}{0.7}
+  \caption{Podział aplikacji klienta na moduły.}
+  \label{fig:client-modules}
+\end{figure}
+
+\makesubsection{Rola biblioteki \textit{Webpack} oraz \textit{Babel} w warstwie klienta}{sub:client-infra-webpack}
+
+Jak wspomniano we wcześniejszym podrozdziale, aplikacja została napisana z wykorzystaniem języka \textit{Typescript},
+toteż w celu przetworzenia kodu \textit{Typescript} do zrozumiałego dla przeglądarek wysokowydajnego i zminifikowanego
+kodu \textit{Javascript} wykorzystano niestandardowe konfiguracje bibliotek \textit{Webpack} oraz \textit{Babel}.
+\textit{Webpack} odpowiada za połączenie wszystkich zasobów klienta (pliki \textit{Typescript}, obrazy oraz arkusze
+styli). \textit{Typescript} natomiast odpowiada za transpilowanie\footnote{Transpilacja — konwersja kodu źródłowego w
+  równoważnym języku programowania. W przeciwieństwie do kompilacji transpilacja działa na tym samym poziomie abstrakcji
+  \cite{bib:transpiling}.} kodu dla standardów zrozumiałych przez starsze przeglądarki internetowe. Zdecydowano się na
+niestandardowe konfiguracje z uwagi na osobny projekt przechowujący wszystkie style projektu napisane z wykorzystaniem
+technologii \textit{Tailwind}. Takie rozwiązanie przyszłościowo ułatwi tworzenie klienta typu desktop wykorzystującego,
+chociażby technologię \textit{Electron}. Na \imgref{fig:client-compile} pokazano zaimplementowany proces kompilowania i
+transpilowania kodu \textit{Typescript} oraz łączenia dodatkowych zależności w końcową wersję produkcyjną możliwą do
+uruchomienia z wykorzystaniem kontenera \textit{Typescript} i serwera \textit{HTTP} \textit{Nginx}.
+%
+\begin{figure}[H]
+  \centering
+  \safeincludesvg{3_2/2_1_client_compile}{0.8}
+  \caption{Proces przetworzenia kodu źródłowego klienta na kod produkcyjny.}
+  \label{fig:client-compile}
+\end{figure}
+
+\makesubsection{Zastosowanie wzorca reaktywnego w aplikacji klienta}{sub:client-reactive-pattern}
+
+W aplikacji klienta w dużym stopniu korzystano ze wzorca reaktywnego zapewnianego przez bibliotekę \textit{RXJS}.
+Biblioteka ta umożliwia tworzenie obserwowalnych strumieni, modyfikowane emitowanych wartości poprzez operatory oraz
+reagowanie na zmiany wykorzystując mechanizm subskrypcji. Główne elementy tej biblioteki to klasy \verb|Subject|,
+\verb|BehaviorSubject| oraz \verb|Observable| odpowiadające za tworzenie wyżej wymienionych strumieni. Programowanie
+reaktywne zostało wykorzystane w aplikacji w miejscach, w których zachodzi potrzeba asynchronicznej wymiany danych np. z
+zapytania \textit{HTTP} do widoku.
+
+Na listingu \lisref{lis:rxjs} widoczna jest przykładowa implementacja pobierania szczegółów kanału tekstowego.
+Każdorazowe pobranie uruchamiane jest przy wyemitowaniu wartości do \verb|_onChangeObserver$| przy aktualizacji lub
+usunięciu kanału tekstowego lub zmianie ścieżki (inny kanał tekstowy). Dzięki takiemu podejściu dane w interfejsie
+użytkownika są na bieżąco aktualizowane i spójne z danymi w bazie danych. Widoczny jest również szereg operatorów
+modyfikujących strumień (takich jak \verb|map|, \verb|filter| czy \verb|switchMap|).
+%
+\begin{lstlisting}[style=JSES6Base,label={lis:rxjs},caption={Przykład zastosowania biblioteki \textit{RXJS}.}]
+fetchTextChannelDetails$(
+  route: ActivatedRoute
+): Observable<TextChannelDetailsResDto> {
+  return combineLatest([route.paramMap, this._onChangeObserver$]).pipe(
+    tap(() => this.setFetching(true)),
+    distinctUntilChanged(),
+    map(([paramMap]) => Number(paramMap.get('textChannelId'))),
+    filter(textChannelId => !!textChannelId),
+    switchMap(textChannelId => {
+      this._textChannelId$.next(textChannelId);
+      return this._guildManagementHttpClientService
+        .getTextChannelDetails$(textChannelId);
+    }),
+    tap(textChannelDetails => {
+      this._textChannelDetails$.next(textChannelDetails);
+      this.setFetching(false);
+    }),
+    catchError(err => {
+      this.setFetching(false);
+      return throwError(() => err);
+    })
+  );
+}
+\end{lstlisting}
+
+\makesection{Architektura warstwy serwera}{sec:server-architecture}
+
+Architektura serwera została napisana z wykorzystaniem skalowalnej infrastruktury mikroserwisowej przy użyciu
+rozwiązania \textit{Spring Cloud Netflix}. Odróżnia się od klasycznej architektury typu monolit podziałem dużej
+aplikacji na kilka mniejszych, działających w heterogenicznych środowiskach oraz możliwych do uruchomienia na różnych
+zdecentralizowanych serwerach. Na \imgref{fig:server-infra} widoczna jest cała architektura z uwzględnieniem mikrousług
+skierowanych na konkretne cele biznesowe, bazy danych oraz dodatkowe elementy systemu niezbędne do poprawnego jego
+działania w architekturze rozproszonej. Wśród tych składowych można rozróżnić kilka mikrousług wykonujących konkretne
+cele biznesowe:
+%
+\begin{itemize}
+  \item \textbf{user service} — przechowywanie danych użytkowników aplikacji, obsługa uwierzytelniania i autoryzacji
+        (logowanie, rejestracja) z wyłączeniem kont obsługiwanych przez zewnętrznych dostawców (\textit{OpenID}),
+  \item \textbf{sphere service} — przechowywanie i zarządzanie Sferami oraz kanałami tekstowymi przez zarządców,
+        dodawanie i usuwanie członków \textit{Sfer},
+  \item \textbf{settings service} — przechowywanie i zarządzanie ustawieniami użytkowników w aplikacji (ustawienia
+        języka, motywu itp.),
+  \item \textbf{oauth2 client service} — autoryzacja i uwierzytelnianie użytkowników przez zewnętrznych dostawców —
+        \textit{Google} oraz \textit{Facebook} z wykorzystaniem specyfikacji \textit{OAuth2} oraz \textit{OpenID},
+  \item \textbf{notification service} — obsługa powiadomień w aplikacji w tym powiadomień w formie wiadomości email,
+  \item \textbf{multimedia service} — obsługa plików w aplikacji w tym: generowanie obrazów, kompresja plików
+        przesyłanych z czatu oraz zapis i odczyt tych plików na serwerze typu \textit{S3},
+  \item \textbf{chat service} — obsługa czatu aplikacji (wysyłania oraz odbierania wiadomości w czasie rzeczywistym).
+\end{itemize}
+
+Oprócz wymienionych mikrousług znajdują się również dodatkowe usługi charakterystyczne dla architektury rozproszonej. Są
+to odpowiednio:
+%
+\begin{itemize}
+  \item \textbf{config server} — serwer przechowujący pliki konfiguracyjne wszystkich mikroserwisów oraz innych serwisów
+        systemu,
+  \item \textbf{vault} — serwer przechowujący wrażliwej informacje systemu (klucze dostępu do baz danych, poświadczenia
+        oraz zestaw kluczy dla \textit{Apache Kafka}, itp.),
+  \item \textbf{discovery server} — serwer rejestrujący nowe instancje mikroserwisów oraz propagujący ich stan (aktywna
+        lub nieaktywna),
+  \item \textbf{serwer brzegowy} — serwer pośredniczący składający się na bramę \textit{API} (ang. \english{API
+          gateway}) oraz moduł równoważenia obciążenia (ang. \english{load balancer}),
+  \item \textbf{kafka} — broker wiadomości używany do komunikacji między mikroserwisami infrastruktury przy
+        wykorzystaniu architektury sterowanej zdarzeniami.
+\end{itemize}
+%
+\begin{figure}[H]
+  \centering
+  \safeincludesvg{3_3/0_1_server_infra}{1}
+  \caption{Infrastruktura warstwy serwera.}
+  \label{fig:server-infra}
+\end{figure}
+
+\makesubsection{
+  Zastosowanie frameworka \textit{Spring} oraz \textit{Spring Cloud} w środowisku \textit{JVM}
+}{sub:server-spring-jvm}
+
+Mikrousługi w systemie zostały napisane przy użyciu \textit{frameworka} \textit{Spring} i języka \textit{Java}.
+\textit{Framework} ten powstał w 2002 roku i stale zyskiwał na popularności stając się najpopularniejszym rozwiązaniem
+umożliwiającym tworzenie usług webowych w języku \textit{Java}. W projekcie skorzystano z automatycznych konfiguracji
+zapewnianych przez \textit{Spring Boot} co znacznie przyspieszyło i zredukowało tzw. \english{boilerplate code}, czyli
+powtarzalny, ale niezbędny kod do skonfigurowania i uruchomienia aplikacji. Dodatkowo skorzystano z wielu podprojektów
+\textit{Spring}, tj. \textit{Spring Security} czy \textit{Spring Data JPA} zapewniające interfejsy umożliwiające
+odpowiednio uwierzytelnianie i autoryzacje użytkowników oraz zapewniające dostęp do bazy danych
+\cite{bib:spring-walls-2019}. Każdy mikroserwis w projekcie stworzony z wykorzystaniem \textit{frameworka}
+\textit{Spring} działa w ramach kontenera \textit{Tomcat} będącego serwerem aplikacji \textit{Java}. Serwer aplikacji
+działa w ramach kontenera \textit{Docker}, toteż możliwe jest uruchomienie kilku takich kontenerów bez wzajemnego wpływu
+na siebie.
+
+Dodatkowo skorzystano z rozwiązania \textit{Spring Cloud Netflix}, czyli projektu stanowiącego zestaw narzędzi do
+tworzenia rozwiązań systemów rozproszonych \cite{bib:spring-cloud-netflix}. W projekcie wykorzystano przede wszystkim
+serwer konfiguracji, serwer brzegowy oraz \textit{service discovery} (\textit{Eureka}). Jak widać na
+\imgref{fig:server-infra} serwer konfiguracji (\textit{config}) komunikuje się z magazynem kluczy \textit{Vault} oraz
+repozytorium \textit{Github}. Wynika to z faktu, że cała konfiguracja infrastruktury serwerowej przechowywana jest w
+jednym repozytorium jako pojedyncze źródło prawdy i jest taka sama dla wielu instancji jednego mikroserwisu. Dodatkowo
+wrażliwe dane, takie jak klucze dostępu do elementów infrastruktury serwera przechowywane są w magazynie \textit{Vault}
+(\imgref{fig:vault}) na osobnym serwerze zabezpieczonym kilkoma tokenami dostępu (\imgref{fig:server-infra}).
+%
+\begin{figure}[H]
+  \centering
+  \safeincludepng{3_3/1_1_vault}{1}
+  \caption{Magazyn kluczy Vault.}
+  \label{fig:vault}
+\end{figure}
+
+Na \imgref{fig:server-infra} widoczna jest również usługa \textit{service discovery}. Jak wspomniano we wcześniejszym
+podrozdziale umożliwia ona rejestracje nowych instancji mikroserwisów oraz dostarcza panel sterowania
+(\imgref{fig:spring-eureka}) zapewniający podgląd statusu zarejestrowanych usług w systemie (odpowiednio \textit{UP} i
+\textit{DOWN} dla aktywnej lub nieaktywnej usługi). Przy nazwie usługi dodawany jest dodatkowo losowy identyfikator w
+celu odróżnienia dwóch instancji tej samej mikrousługi.
+%
+\begin{figure}[H]
+  \centering
+  \safeincludepng{3_3/1_2_spring_eureka}{1}
+  \caption{Panel sterowania usługi \textit{service discovery} (\textit{Eureka}).}
+  \label{fig:spring-eureka}
+\end{figure}
+
+\makesubsection{Bezstanowe uwierzytelnianie z wykorzystaniem specyfikacji \textit{JWT}}{sub:server-jwt}
+
+Z uwagi na zastosowaną architekturę mikroserwisową uwierzytelnianie oraz autoryzacja użytkowników muszą być bezstanowe,
+tj. serwer nie może przechowywać sesji o zalogowanych użytkownikach a uwierzytelniać ich przy każdym wykonanym żądaniu
+wymagającym podania poświadczeń. W zrealizowanym systemie w tym celu wykorzystano specyfikację \textit{JWT}. Na
+\imgref{fig:jwt-schema} przedstawione są kolejne etapy weryfikacji poświadczeń poprzez logowanie z użyciem hasła. Po
+udanej weryfikacji tworzone są dwa tokeny: \textit{access} oraz \textit{refresh}, z których ten pierwszy jest ważny 5
+minut a refresh przypada na czas sesji użytkownika. Po wylogowaniu \textit{access token} umieszczany jest w tabeli
+\verb|blacklist_jwts|, aby niemożliwe było jego ponowne użycie, a \textit{refresh token} jest niszczony, aby zakończyć
+sesję użytkownika. Dodatkowo sam token podpisywany jest tajnym kluczem, aby niemożliwym było jego podrobienie.
+%
+\begin{figure}[H]
+  \centering
+  \safeincludesvg{3_3/2_1_jwt_schema}{1}
+  \caption{Diagram przedstawiający logowanie i wylogowanie przy użyciu \textit{JWT}.}
+  \label{fig:jwt-schema}
+\end{figure}
+
+\makesubsection{Komunikacja pomiędzy elementami infrastruktury serwerowej}{sub:server-communication}
+
+W standardowej architekturze mikroserwisowej komunikacja między serwisami odbywa się zazwyczaj z wykorzystaniem
+standardowych zapytań \textit{HTTP}. Zdecydowano się odejść od tego podejścia na rzecz architektury sterowanej
+zdarzeniami z wykorzystaniem \textit{Apache Kafka} z uwagi na większą przepustowość, a co za tym idzie większą szybkość
+przesyłania komunikatów. W celach deweloperskich skorzystano z jednego \textit{brokera} (serwera \textit{Kafki}), lecz
+sam system został przygotowany do pracy z większą ilością \textit{brokerów}. Do zarządzania pracą \textit{brokerów} w
+klastrze\footnote{Klaster — zbiór komputerów lub maszyn wirtualnych w rozproszonej sieci serwerów działających
+  równolegle \cite{bib:cluster-definition}.} \textit{Kafki} wykorzystano oprogramowanie \textit{Zookeeper} umożliwiające
+konfigurację i synchronizację oraz równoważenie obciążenia między wieloma \textit{brokerami}. Każdy \textit{broker}
+posiada tematy podzielone na partycje. Za zarządzanie, która wiadomość powinna zostać odczytana odpowiada wartość
+przesunięcia (ang. \english{offset}). Jest ona każdorazowo inkrementowana, dzięki czemu niemożliwym jest nadpisanie
+wiadomości. Do klastra może przyłączyć się wiele konsumentów oraz producentów \cite{bib:kafka-overview}. Producent
+dodaje dane (wiadomość) do wybranego tematu, a konsument odbiera. Przedstawienie tego procesu widoczne jest na
+\imgref{fig:kafka-async}.
+%
+\begin{figure}[H]
+  \centering
+  \safeincludesvg{3_3/3_1_kafka_async}{1}
+  \caption{
+    Schemat działania klastra \textit{Apache Kafka}. Opracowanie własne na podstawie \cite{bib:kafka-cluster-image}.
+  }
+  \label{fig:kafka-async}
+\end{figure}
+
+W omawianym systemie wykorzystano dwa modele przesyłania komunikatów przy użyciu \textit{Apache Kafka}:
+%
+\begin{itemize}
+  \item \textbf{model asynchroniczny} — wykorzystany w komunikacji między serwisami a mikroserwisem odpowiadającym za
+        wysyłanie wiadomości email z uwagi na brak wiadomości zwrotnej (\imgref{fig:kafka-async}),
+  \item \textbf{model synchroniczny} — oparty o \english{Request Reply Enterprise Integration Pattern} wykorzystujący
+        kanały asynchroniczne do zasymulowania modelu żądanie-odpowiedź (wykorzystany przede wszystkich w transakcjach
+        rozproszonych).
+\end{itemize}
+
+Wspomniany model synchroniczny wykorzystuje temat nadawania wiadomości oraz $N$ tematów odpowiedzi, gdzie $N$ to liczba
+mikroserwisów zainteresowanych odbiorem komunikatu odpowiedzi. Każdy serwis posiada własny identyfikator, na podstawie
+którego tworzy temat odpowiedzi. Dzięki temu w przypadku wielu instancji tego samego serwisu \textit{Kafka} rozpozna, z
+którego mikroserwisu nadano wiadomość i do odeśle do tego tematu odpowiedzi, który będzie miał ten sam identyfikator
+\cite{bib:kafka-req-reply}. Przesyłanie identyfikatora odbywa się z wykorzystaniem nagłówka \verb|CORRELATION_ID|.
+Procedura z wykorzystaniem modelu synchronicznego widoczna jest na \imgref{fig:kafka-sync}. Dodatkowo obecny jest moduł
+równoważenia obciążenia zapewniany przez \textit{Zookeeper} w przypadku wykorzystania tych samych tematów na różnych
+\textit{brokerach} \textit{Kafki}.
+%
+\begin{figure}[H]
+  \centering
+  \safeincludesvg{3_3/3_2_kafka_sync}{1}
+  \caption{Schemat działania modelu synchronicznego \textit{Kafki}.}
+  \label{fig:kafka-sync}
+\end{figure}
+
+\makesubsection{Komunikacja z klientem z wykorzystaniem serwera brzegowego}{sub:server-communication-edge-server}
+
+Jak wspomniano na początku rozdziału, aplikacja klienta komunikuje się z serwerem w głównej mierze przy pomocy protokołu
+\textit{HTTP} i specyfikacji \textit{REST}. Z uwagi na zastosowaną architekturę mikroserwisów (możliwość uruchamiania
+wielu instancji tego samego mikroserwisu) klient musi wiedzieć, z którym mikroserwisem powinien się połączyć, aby
+zrealizować żądanie. Przy jednej instancji mikroserwisu jest to stosunkowo proste, lecz przy wielu stanowi to problem
+niejednoznaczności. Rozwiązano go przy pomocy zaimplementowanego serwera brzegowego (\imgref{fig:edge-server})
+składającego się na główną bramę \textit{API} (ang. \english{API gateway}) oraz modułu równoważenia obciążenia (ang.
+\english{load balancer}). Sama brama wystawia odpowiednie punkty końcowe \textit{REST} dla aplikacji klienta a moduł
+równoważenia obciążenia odpowiada za właściwe trasowanie żądań do instancji mikroserwisów (w przypadku wielu instancji
+tego samego mikroserwisu zgodnie z przyjętym algorytmem trasowania — w projekcie skorzystano z algorytmu \english{Round
+  Robin} kierującego żądania sekwencyjnie do kolejnych instancji usługi). Specyfikacja taka rozwiązuje problem
+niejednoznaczności żądań oraz wprowadza dodatkowe zabezpieczenie między klientem a samymi usługami, wystawiając jeden
+wspólny interfejs \textit{REST} a tym samym ukrywając punkty końcowe usług biznesowych systemu.
+%
+\begin{figure}[H]
+  \centering
+  \safeincludesvg{3_3/4_1_edge_server}{1}
+  \caption{Komunikacja z wykorzystaniem serwera brzegowego.}
+  \label{fig:edge-server}
+\end{figure}
+
+\makesubsection{
+  Dwukierunkowa wymiana danych w systemie czatu z wykorzystaniem protokołów \textit{Websocket} i \textit{STOMP}
+}{sub:server-websocket-stomp}
+
+Zgodnie z założeniami projektu w systemie czatu skorzystano z protokołu \textit{Websocket}. Protokół ten powstał w 2011
+roku i umożliwia dwukierunkową wymianę informacji między serwerem a klientem. Idea jego działania opiera się na
+utrzymywaniu otwartego kanału komunikacyjnego w przeciwieństwie do protokołu \textit{HTTP}, w którym po każdym
+otrzymaniu odpowiedzi z żądania, połączenie jest zamykane \cite{bib:mdn-websockets}. Sam w sobie protokół
+\textit{Websocket} jest najniższą warstwą abstrakcji, przez co integracja z innymi usługami (takimi jak np.
+\textit{broker} komunikatów) jest skomplikowana. Z tego względu użyto rozwiązania \textit{STOMP} (ang. \english{Simple
+  Text Oriented Messaging Protocol}). Sam \textit{STOMP} nie jest ściśle związany z protokołem \textit{Websocket}, ale
+zapewnia wspólny sposób komunikacji w ramach różnych \textit{brokerów} komunikatów. Umożliwia on również dodawanie
+nagłówków do połączenia \textit{handshake} (nawiązywanego przy zmianie protokołu \textit{HTTP} na \textit{Websocket} i
+nawiązywaniu sesji z serwerem) które pozwalają przesłać token identyfikujący użytkownika i zezwolić bądź odmówić
+zawiązanie połączenia w celu odbierania lub wysyłania wiadomości \cite{bib:stomp}.
+
+\makesubsection{Przechowywanie plików z użyciem magazynu danych typu \textit{S3}}{sub:server-s3}
+
+Omawiany system do przechowywania plików używa magazynu typu \textit{S3}. Magazyn ten składa się z \textit{kubełków}
+(ang. \english{buckets}) oraz obiektów. \textit{Kubełki} reprezentują pojemniki na dane a obiekty składają się z klucza
+(reprezentującego ścieżkę do pliku), danych oraz dodatkowych metadanych takich jak wielkość pliku, metody kodowania itp.
+W projekcie skorzystano z dwóch serwerów \textit{S3} które przechowywały odpowiednio:
+%
+\begin{itemize}
+  \item \textbf{pliki statyczne aplikacji} — tj. czcionki, grafiki używane w warstwie klienta oraz serwera i pliki
+        tłumaczeń w formie dokumentów JSON,
+  \item \textbf{pliki modyfikowane przez infrastrukturę serwera} — tj. zdjęcia profilowe użytkowników, \textit{Sfer},
+        pliki dołączane do wiadomości tekstowych oraz tzw. \textit{lustrzane wiadomości email} (ang. \english{mirrored
+          emails}) wykorzystywane w celu umożliwienia otwarcia ich w przeglądarce użytkownika.
+\end{itemize}
+
+Na etapie rozwoju projektu skorzystano z darmowego rozwiązania o nazwie \textit{Minio} uruchamianego w środowisku
+\textit{Docker}. Udostępnia ono dwa interfejsy: jeden poprzez \textit{API} \textit{AWS SDK} a drugi jako aplikacja
+webowa (widoczna na \imgref{fig:minio-interface}). Jako że \textit{Minio} posiada \textit{API} zgodne z rozwiązaniem
+oferowanym przez \textit{AWS} — usługą \textit{S3} — w przypadku migracji produkcyjnej na chmurę \textit{AWS} nie będzie
+potrzeby wprowadzania zmian w kodzie źródłowym aplikacji.
+%
+\begin{figure}[H]
+  \centering
+  \safeincludepng{3_3/6_1_minio_interface}{1}
+  \caption{Interfejs webowy serwera typu \textit{S3} Minio.}
+  \label{fig:minio-interface}
+\end{figure}
+
+\makesubsection{Zastosowane serwery baz danych oraz wzorzec \textit{DPS}}{sub:server-databases-dps}
+
+W aplikacji skorzystano z trzech baz danych. Pierwsza z nich to relacyjna baza danych \textit{PostgreSQL}. Wykorzystano
+ją jako główny system bazodanowy, w którym przechowywane jest większość informacji o użytkownikach, \textit{Sferach}
+oraz wzajemnych relacji między nimi.
+
+Drugą z kolei użytą bazą danych była nierelacyjna baza \textit{Redis}. Baza ta przechowuje dane w pamięci w postaci
+klucz-wartość. Wykorzystana została do systemu cache umożliwiającego ograniczenie częstych zapytań do głównej bazy
+danych \textit{PostgreSQL} na rzecz pobierania danych zapisanych w pamięci co jest istotne w kwestii budowania systemów
+skierowanych na duże obciążenie \cite{bib:redis}.
+
+Dodatkowo w celu przechowywania wiadomości wykorzystano nierelacyjną bazę danych \textit{Cassandra}. Jej główne cechy to
+duża szybkość odczytu, skalowalność liniowa i duża odporność na błędy z uwagi na replikację danych. Wykorzystuje ona
+język \textit{CQL}, podobny do języka \textit{SQL}, lecz pozbawiony jest on instrukcji \verb|JOIN|
+\cite{bib:cassandra-overview}.
+
+W przypadku klasycznej architektury monolitycznej występuje zazwyczaj jedna aplikacji i jedna baza danych. W takim
+rozwiązaniu z oczywistych względów jest trudne (a wręcz czasami niemożliwie) skalowalnie
+horyzontalne\footnote{Skalowanie horyzontalne — metoda zwiększania mocy obliczeniowej systemu poprzez dodawanie
+  kolejnych instancji aplikacji działających równolegle \cite{bib:scaling-types}.} instancji bazy danych. W
+przedstawianym projekcie skorzystano ze wzorca \textit{database-per-service} (skr. \textit{DPS}) (bez uwzględnienia bazy
+\textit{Redis}), który narzuca, aby każdy mikroserwis korzystał z własnej instancji bazy danych. Podział baz danych
+\textit{PostgreSQL} na tabele prezentuje się następująco:
+%
+\begin{itemize}
+  \item baza danych \textbf{\texttt{user}} (\imgref{fig:pgsql-first-model}):
+        \begin{itemize}
+          \item tabela \textbf{\texttt{blacklist\_jwts}} — bufor przechowujący tokeny dostępu po wylogowaniu użytkownika
+                (zakończeniu sesji),
+          \item	tabela \textbf{\texttt{mfa\_users}} — dane do weryfikacji wieloetapowej wykonywanej poprzez aplikacje
+                \textit{Microsoft Authenticator} lub \textit{Google Authenticator},
+          \item tabela \textbf{\texttt{ota\_tokens}} — jednorazowe kody używane do resetowania hasła, aktywacji konta
+                oraz weryfikacji wieloetapowej poprzez adres email,
+          \item tabela \textbf{\texttt{refresh\_tokens}} — tokeny odświeżania przechowujące stan aktywnych sesji
+                użytkownika w systemie,
+          \item tabela \textbf{\texttt{roles}} — tabela ról użytkowników systemu,
+          \item tabela \textbf{\texttt{users}} — podstawowe informacje o użytkowniku (imię, nazwisko, adres email, hasło
+                itp.),
+          \item tabela \textbf{\texttt{users\_roles}} — tabela łącząca użytkowników z rolami w relacji
+                \texttt{WIELE-DO-WIELU},
+        \end{itemize}
+  \item baza danych \textbf{\texttt{sphere}} (\imgref{fig:pgsql-first-model}):
+        \begin{itemize}
+          \item tabela \textbf{\texttt{banned\_users}} — przechowywanie zablokowanych użytkowników \textit{Sfer},
+          \item tabela \textbf{\texttt{guild\_links}} — przechowywanie linków z zaproszeniami do \textit{Sfer},
+          \item tabela \textbf{\texttt{guilds}} — podstawowe informacje o \textit{Sferach} (nazwa, typ, identyfikator
+                zarządcy \textit{Sfery} itp.),
+          \item tabela \textbf{\texttt{text\_channels}} — kanały tekstowe \textit{Sfer},
+          \item tabela \textbf{\texttt{user\_guilds}} — powiązanie użytkownika ze \textit{Sferą} (uczestnicy
+                \textit{Sfery}),
+        \end{itemize}
+\end{itemize}
+%
+\begin{figure}[H]
+  \centering
+  \safeincludepng{3_3/7_1_pgsql_first_model}{1}
+  \caption{Schematy tabel baz \textit{PostgreSQL} wykorzystanych w mikroserwisach \textit{user} i \textit{sphere}.}
+  \label{fig:pgsql-first-model}
+\end{figure}
+
+\begin{itemize}
+  \item baza danych \textbf{\texttt{multimedia}} (\imgref{fig:pgsql-second-model}):
+        \begin{itemize}
+          \item tabela \textbf{\texttt{account\_profiles}} — informacje o profilu użytkownika (kolor wiodący, ścieżka do
+                niestandardowego zdjęcia itp.),
+          \item tabela \textbf{\texttt{guild\_profiles}} — informacje o \textit{Sferze} (podobnie jak dla użytkownika,
+                tj. kolor wiodący oraz ścieżka do niestandardowego zdjęcia),
+        \end{itemize}
+  \item baza danych \textbf{\texttt{notification}} (\imgref{fig:pgsql-second-model}):
+        \begin{itemize}
+          \item	tabela \textbf{\texttt{user\_notifs}} — informacje o ustawieniach powiadomień użytkownika,
+        \end{itemize}
+  \item baza danych \textbf{\texttt{oauth2\_client}} (\imgref{fig:pgsql-second-model}):
+        \begin{itemize}
+          \item tabela \textbf{\texttt{oauth2\_users}} — informacje o zarejestrowanym użytkowniku, którego konto do
+                weryfikacji poświadczeń korzysta ze specyfikacji \textit{OpenID} (uwierzytelnianie społecznościowe z
+                wykorzystaniem konta \textit{Google} lub \textit{Facebook}),
+        \end{itemize}
+  \item baza danych \textbf{\texttt{settings}} (\imgref{fig:pgsql-second-model}):
+        \begin{itemize}
+          \item tabela \textbf{\texttt{user\_relations}} — ustawienia powiązane z kontem użytkownika (wybrany język
+                interfejsu, motyw kolorystyczny itp.).
+        \end{itemize}
+\end{itemize}
+%
+\begin{figure}[H]
+  \centering
+  \safeincludepng{3_3/7_2_pgsql_second_model}{1}
+  \caption{Schematy pozostałych tabel w bazach danych \textit{PostgreSQL} mikroserwisów.}
+  \label{fig:pgsql-second-model}
+\end{figure}
+
+Ponadto dla mikroserwisu \textit{chat} zastosowano pojedynczy klaster bazy danych \textit{Cassandra}. Klaster ten składa
+się $N$ partycji, gdzie $N$ to liczba kanałów tekstowych. Wynika to z zastosowanego modelu danych widocznego na
+\imgref{fig:chat-cassandra-model}. Znajdują się w nim 4 klucze proste tworzące klucz złożony. Klucze proste dzielą się
+na klucze klastrowania i klucz partycjonowania. Klucz klastrowania odpowiada za sortowanie i wyszukiwanie rekordów w
+obrębie partycji. Klucz partycjonowania natomiast rozdziela dane na osobne partycje \cite{bib:cassandra-data}. W
+zrealizowanym systemie kluczem partycjonowania jest \verb|text_channel_id|, co powoduje stworzenie tylu partycji, ile
+istnieje kanałów tekstowych. Pozostałe klucze proste to klucze klastrowania niezbędne do identyfikacji wiadomości lub
+jej sortowania według daty (kolumna \verb|created_timestamp|) \cite{bib:cassandra-clustering}.
+%
+\begin{figure}[H]
+  \centering
+  \safeincludepng{3_3/7_3_chat_cassandra_model}{0.4}
+  \caption{Model danych dla obsługi wiadomości czatu.}
+  \label{fig:chat-cassandra-model}
+\end{figure}
+
+\makesubsection{
+  Zachowanie integralności struktury bazy danych na poziomie aplikacji z wykorzystaniem systemu \textit{Liquibase}
+}{sub:server-liquibase}
+
+Poszczególne mikroserwisy w aplikacji korzystają z \textit{frameworka} \textit{Hibernate}. Jest to rozwiązanie
+umożliwiające przekształcanie relacyjnych modelów danych na reprezentacje obiektowe w języku \textit{Java}. Domyślnie
+framework ten sam zarządza modelem bazy danych, co może być mało elastyczne w przypadku modyfikowania tabel z
+wprowadzonymi już danymi. Z tego względu w omawianym projekcie wyłączono całkowicie mechanizm automatycznego zarządzania
+strukturą bazy danych na rzecz biblioteki \textit{Liquibase}. Rozwiązanie to przy użyciu kodu \textit{XML} i migracji
+pozwala na ręczne zarządzanie modelem bazy danych, przy czym sam \textit{Hibernate} przy uruchomieniu aplikacji
+weryfikuje jedynie poprawność modelu z jego zadeklarowaną reprezentacją obiektową. Dzięki zastosowaniu uniwersalnego
+kodu \textit{XML} możliwe jest generowanie modelu niezależnie od dialektu języka \textit{SQL} dla wielu popularnych
+rozwiązań \textit{RDBMS}. Na listingu \lisref{lis:liquibase} widoczny jest przykładowy skrypt usuwający dwie kolumny
+\verb|password| i \verb|birth_date| oraz dodający je na nowo z uwzględnieniem nowych atrybutów (zezwolenie na wartości
+typu \verb|nullable| w tych kolumnach).
+%
+\begin{lstlisting}[
+  language=XML,
+  label={lis:liquibase},
+  caption={Przykładowy kod \textit{XML} migracji w systemie \textit{Liquibase}.}
+]
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+  https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.4.xsd">
+
+  <property name="keyType" value="bigint unsigned" dbms="mysql,h2"/>
+  <property name="keyType" value="bigint" dbms="postgresql,oracle"/>
+
+  <changeSet id="2023-11-12_0000002_change-fields-to-nullable"
+             author="milosz08" context="lq_dev, lq_docker">
+    <dropColumn tableName="users" columnName="password"/>
+    <dropColumn tableName="users" columnName="birth_date"/>
+
+    <addColumn tableName="users">
+      <column name="password" type="varchar(72)">
+        <constraints nullable="true"/>
+      </column>
+      <column name="birth_date" type="date">
+        <constraints nullable="true"/>
+      </column>
+    </addColumn>
+  </changeSet>
+</databaseChangeLog>
+\end{lstlisting}
+
+\makesubsection{Transakcje rozproszone z wykorzystaniem \textit{SAGA}}{sub:server-saga}
+
+W realizowanym systemie z uwagi na działanie w środowisku rozproszonym zastosowano dwa rodzaje transakcji: lokalne i
+rozproszone. Na poziomie samej pojedynczej metody mikroserwisu zachowanie reguł \textit{ACID} zapewniane jest przez
+mechanizm \textit{Spring Transactional Management} i adnotację \verb|@Transactional|. Z kolei obsługa transakcji
+rozproszony realizowana jest szynę danych \textit{Apache Kafka} i informację zwrotną w wysyłanym żądaniu. Jeśli dany
+serwis będzie niedyspozycyjny lub zdarzy się inny nieoczekiwany błąd, uruchamiana jest transakcja kompensująca
+wycofująca zmiany \cite{bib:saga}.
+
+Na \imgref{fig:saga-pattern} widoczny jest przykład procesu biznesowego implementującego wzorzec \textit{SAGA}
+przedstawiającego aktywację konta użytkownika w systemie podczas której to wystąpił błąd (błąd taki mógł wyniknąć z
+chwilowej niedyspozycyjności usługi). W pierwszej kolejności sprawdzane jest, czy token aktywujący istnieje i jest
+poprawny. Podczas wystąpienia błędu na etapie generacji ustawień następuje cofnięcie transakcji lokalnej oraz
+kompensacja poprzedniej transakcji (w przedstawionym przykładzie kompensacja polega na przywróceniu stanu tokenu na
+pierwotny, tj. nieużyty). Procedura kończy się komunikatem błędu zwracanym do użytkownika. Proces generowania zdjęcia w
+tym wypadku nie nastąpi.
+%
+\begin{figure}[H]
+  \centering
+  \safeincludesvg{3_3/9_1_saga_pattern}{1}
+  \caption{Zastosowanie \textit{SAGA} na przykładzie procesu aktywacji konta użytkownika.}
+  \label{fig:saga-pattern}
+\end{figure}

@@ -1,0 +1,47 @@
+\subsubsection*{Tytuł pracy}
+\Title
+
+\subsubsection*{Streszczenie}
+Projekt ma na celu przedstawienie możliwości wymiany danych między aplikacjami w środowisku rozproszonym przy użyciu
+Apache Kafka oraz komunikacji z klientem z wykorzystaniem protokołu Websocket na przykładzie prostej aplikacji wymiany
+wiadomości w czasie rzeczywistym. Wykonanie pracy polegało na stworzeniu dwóch osobnych warstw: wizualnej oraz
+serwerowej. Architektura serwerowa została rozdzielona na kilka mikrousług odpowiadających za konkretne cele biznesowe
+aplikacji (uwierzytelnianie, obsługa czatu, przetwarzanie plików itp.). Każdy mikroserwis stanowi osobny serwer
+aplikacji z własną bazą danych. Komunikacja między mikroserwisami została zapewniona przez architekturę sterowaną
+zdarzeniami i system Apache Kafka. Sama komunikacja z aplikacją klienta została zrealizowana przy użyciu interfejsu
+REST, protokołu Websocket oraz zaimplementowanego serwera brzegowego. Wykonany system umożliwia kilka operacji. Są to
+m.in. utworzenie konta, zarządzanie pokojami do rozmów, kanałów tekstowych oraz wysyłanie wiadomości z opcjonalnymi
+załącznikami w formie plików. Stworzony system mimo swojej zewnętrznej prostoty zawiera wiele zaawansowanych konceptów z
+zakresu architektury mikrousługowej. Rozwiązują one problemy aplikacji projektowanych na systemy rozproszone które nie
+występują (lub występują w nieznacznym stopniu) w aplikacjach monolitycznych.
+
+\subsubsection*{Słowa kluczowe}
+system czatu, mikroserwisy, architektura sterowana zdarzeniami, apache kafka, websockety, apache cassandra, kontenery
+docker
+
+\newpage
+
+\begin{otherlanguage}{british}
+
+  \subsubsection*{Thesis title}
+  \TitleAlt
+
+  \subsubsection*{Abstract}
+  The following project was designed to demonstrate the possibility of data exchange between applications in distributed
+  environments using the Apache Kafka platform and communication with client using Websocket protocol on the example of
+  a simple real-time messaging application. Main goal of this project involved creating two separate layers: visual
+  layer and server layer. The server architecture was divided into several microservices responsible for specific
+  business purposes in the application (authentication, chat, file processing, etc.). Each microservice is a separate
+  application server with its own database. Communication between microservices was provided by the event-driven
+  architecture and an Apache Kafka software. Communication between client application and server layer was implemented
+  using a REST interface, Websocket protocol and an API gateway server. This system allows us to perform several
+  operations. These include creating an account, managing chat rooms, text channels and sending messages with
+  attachments. Despite its external simplicity, the created system incorporates many advanced concepts in the field of
+  microservices architecture. These concepts address issues in applications designed for distributed systems that are
+  not present (or are present to a lesser extent) in monolithic applications.
+
+  \subsubsection*{Keywords}
+  instant messenger system, microservices, event-driven architecture, apache kafka, websocket, apache cassandra, docker
+  containers
+
+\end{otherlanguage}

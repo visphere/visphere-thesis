@@ -1,0 +1,20 @@
+/*.bib
+/*.blg
+/*.aux
+/*.bbl
+/*.bcf
+/*.fdb*
+/*.fls
+/*.lof
+/*.log
+/*.lot
+/*.out
+/*.run.xml
+/*.synctex*
+/*.toc
+/*.xdv
+/svg-inkscape
+
+# tex output
+/*.pdf
+/build/

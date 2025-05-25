@@ -1,0 +1,86 @@
+{
+  "editor.defaultFormatter": "James-Yu.latex-workshop",
+  "editor.detectIndentation": false,
+  "editor.fontFamily": "Consolas",
+  "editor.fontSize": 13,
+  "editor.formatOnSave": true,
+  "editor.indentSize": "tabSize",
+  "editor.minimap.enabled": false,
+  "editor.renderWhitespace": "all",
+  "editor.rulers": [
+    120
+  ],
+  "editor.stickyScroll.enabled": false,
+  "editor.stickyScroll.scrollWithEditor": false,
+  "editor.tabSize": 2,
+  "[svg]": {
+    "editor.defaultFormatter": "jock.svg"
+  },
+  "explorer.autoReveal": false,
+  "explorer.compactFolders": false,
+  "errorLens.enabled": true,
+  "errorLens.enabledDiagnosticLevels": [
+    "error",
+    "warning",
+    "info",
+    "hint"
+  ],
+  "errorLens.gutterIconsEnabled": true,
+  "errorLens.messageBackgroundMode": "none",
+  "errorLens.replace": [
+    {
+      "matcher": "(.+)",
+      "message": ""
+    }
+  ],
+  "files.insertFinalNewline": true,
+  "files.exclude": {
+    "*.bib": true,
+    "*.aux": true,
+    "*.bbl": true,
+    "*.bcf": true,
+    "*.blg": true,
+    "*.fdb*": true,
+    "*.fls": true,
+    "*.log": true,
+    "*.lot": true,
+    "*.lof": true,
+    "*.out": true,
+    "*.run.xml": true,
+    "*.synctex*": true,
+    "*.toc": true,
+    "*.xdv": true,
+    "**/__latexindent_temp_*.tex": true,
+    "svg-inkscape/**": true,
+  },
+  "git.autofetch": false,
+  "latex-workshop.formatting.latex": "latexindent",
+  "latex-workshop.latex.build.forceRecipeUsage": false,
+  "latex-workshop.latex.recipe.default": "latexmk",
+  "latex-workshop.latex.tools": [
+    {
+      "name": "latexmk",
+      "command": "latexmk",
+      "args": [
+        "-shell-escape",
+        "-synctex=1",
+        "-interaction=nonstopmode",
+        "-file-line-error",
+        "-lualatex",
+        "-outdir=%OUTDIR%",
+        "%DOC%"
+      ],
+      "env": {}
+    }
+  ],
+  "ltex.diagnosticSeverity": "hint",
+  "ltex.language": "pl-PL",
+  "ltex.checkFrequency": "save",
+  "workbench.colorTheme": "Default Dark Modern",
+  "workbench.editor.enablePreview": false,
+  "workbench.iconTheme": "vsc-jetbrains-icons-enhanced",
+  "workbench.startupEditor": "none",
+  "workbench.tree.enableStickyScroll": false,
+  "workbench.tree.indent": 20,
+  "workbench.tree.renderIndentGuides": "always"
+}

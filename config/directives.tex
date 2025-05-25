@@ -1,0 +1,27 @@
+\newcommand{\imagepath}{image/} % ścieżka do obrazów ogólnych (SVG)
+
+% bezpieczny import obrazków svg (jeśli nie ma, teskt alternatywny)
+\newcommand{\safeincludesvg}[2]{
+  \IfFileExists{\imagepath#1.svg}{
+    \includesvg[width=#2\textwidth]{\imagepath#1.svg}
+  }{\textbf{[Obrazek nieznaleziony]}}
+}
+
+% bezpieczny import obrazków (jeśli nie ma, teskt alternatywny)
+\newcommand{\safeincludepng}[2]{
+  \IfFileExists{\imagepath#1.png}{
+    \includegraphics[width=#2\textwidth]{\imagepath#1.png}
+  }{\textbf{[Obrazek nieznaleziony]}}
+}
+
+% helper do referencji, #1 - prefix (rys.), #2 - opcjonalny (tekst po numerze np. a, b, c), #3 - nazwa referencji
+\newcommand{\refhelper}[3]{#1\ref{#3}\ifx#2\empty\else#2\fi}
+\newcommand{\imgref}[2][]{\refhelper{rys. }{#1}{#2}} % odwołanie do rysunku: (rys. X.Xa)
+\newcommand{\lisref}[2][]{\refhelper{}{#1}{#2}} % odwołanie do listingu: (rys. X.Xa)
+
+\newcommand{\english}[1]{{\selectlanguage{british}\emph{#1}}} % do obcego języka
+
+% chapter, section, subsection - razem z labelem (możliwe odwołanie w tekście)
+\newcommand{\makechapter}[2]{\chapter{#1} \label{#2}}
+\newcommand{\makesection}[2]{\section{#1} \label{#2}}
+\newcommand{\makesubsection}[2]{\subsection{#1} \label{#2}}

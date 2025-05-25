@@ -1,0 +1,106 @@
+\documentclass[a4paper,twoside,12pt]{book}
+
+% podstawowe pakiety
+\usepackage[T1]{fontenc} % dzielenie wyrazów (word-break) na stronie
+\usepackage{lmodern} % załadowanie czcionki latex modern
+\usepackage[british,polish]{babel} % języki dokumentu
+\usepackage{indentfirst} % wymusza wcięcie pierwszego akapitu po nagłówku (z defaultu latex pomija)
+\usepackage{xurl} % automatyczne łamanie długich URLów
+\usepackage{float} % pozycjonowanie obiektów
+\usepackage{tabularx} % automatycznie rozciągana kolumna w tabeli
+\usepackage[final,nopatch=footnote]{microtype} % poprawienie typografii (kerning, wysunięcie interpunkcji)
+\usepackage[hidelinks]{hyperref} % linki bez kolorowania/ramek
+\usepackage{graphicx} % umieszczanie grafik w dokumencie
+\usepackage{booktabs} % do tworzenia tabel
+\usepackage{tikz} % do tworzenia grafiki wektorowej w środku latexa
+\usepackage{enumitem} % niestandardowy wygląd list
+\usepackage{csquotes} % lepsze cudzysłowy
+\usepackage{ifmtarg} % sprawdzenie, czy argument makra jest pusty
+\usepackage{silence} % do wyłączania warningów
+\usepackage{svg} % do generowania grafik SVG
+\usepackage{longtable} % tabela używana do spisu skrótów i symboli
+\usepackage[explicit]{titlesec} % niestandardowe style nagłówków (chapter, section, subsection)
+\usepackage{fontspec} % do zarządzania czcionkami (nie działa z PDFLaTeX!, tylko xelatex/lualatex)
+\usepackage{geometry} % rozstaw marginesów
+\usepackage{setspace} % kontrola odstępu między wierszami
+\usepackage{subcaption} % do stackowania obrazów w jednym bloku
+\usepackage{caption} % podpisy pod rysunkami i tabelami
+\usepackage{fancyhdr} % niestandardowe nagłówki (chapter, section, subsection)
+\usepackage[page]{appendix} % dodatki
+\usepackage[backend=biber,style=numeric-comp,sorting=nyt,sortcites=true,maxnames=9]{biblatex} % bibliografia
+\usepackage{color} % kolory
+\usepackage{xcolor} % ponownie kolory
+\usepackage{textcomp} % dodatkowe symbole (waluty, jednostki miar itp.)
+\usepackage{listings} % do listingów (kod źródłowy)
+
+
+% czcionka calibri do strony tytułowej
+\newfontfamily{\titlepagefonttest}{calibri}[Path=font/,Extension=.ttf,UprightFont=*-regular,BoldFont=*-bold]
+
+\geometry{inner=2.5cm,outer=2.5cm,top=2.5cm,bottom=2.5cm} % geometria strony
+\setstretch{1.4} % standardowa przestrzeń miedzy liniami tekstu 1.5
+\frenchspacing % brak przerwy po kropkach
+\setlength{\parskip}{5pt} % odstęp między akapitami
+
+\setlist{itemsep=1pt} % przerwa między elementami listy
+\setlist[itemize,2]{label=$\circ$} % ustaw pustą kropkę jako znak początku 2 poziomu listy
+
+\babelprovide[transforms=oneletter.nobreak]{polish}
+\babelprovide[justification=unhyphenated]{polish}
+\hypersetup{hidelinks,breaklinks=true}
+
+% nagłówki
+\captionsetup{font=small,labelfont=bf,textfont=it,singlelinecheck=false} % podpisy elementów pływających
+\setlength{\headheight}{14.5pt}
+
+% ignoruj justowanie dla nagłówków
+\titleformat{name=\chapter,numberless}[block]{\normalfont\huge\bfseries\raggedright}{}{0pt}{#1~}
+\titleformat{name=\chapter}[display]{\normalfont\huge\bfseries\raggedright}{\chaptertitlename\ \thechapter}{20pt}{#1~}
+\titleformat{name=\section}[hang]{\normalfont\Large\bfseries\raggedright}{\thesection}{20pt}{#1~}
+\titleformat{name=\subsection}[hang]{\normalfont\large\bfseries\raggedright}{\thesubsection}{20pt}{#1~}
+
+% obsługa dodatków
+\renewcommand{\appendixtocname}{Dodatki}
+\renewcommand{\appendixpagename}{Dodatki}
+\renewcommand{\appendixname}{Dodatek}
+
+% bibliografia
+\addbibresource{biblio/biblio.bib}
+
+\input{data.tex} % import głównych danych dokumentu
+\input{config/directives.tex} % niestandardowe dyrektywy
+
+% nagłówek i stopka
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[LO]{\nouppercase{\it\rightmark}}
+\fancyhead[RE]{\nouppercase{\it\leftmark}}
+\fancyhead[LE,RO]{\it\thepage}
+
+% strony z nagłówkiem (nazwa rozdziału, autor) oraz stopką
+\fancypagestyle{headerAndFooter}{
+  \fancyhf{}
+  \fancyhead[LE]{\nouppercase{\Author}}
+  \fancyhead[RO]{\nouppercase{\leftmark}}
+  \fancyfoot[CE, CO]{\thepage}
+}
+
+\input{config/listing.tex}
+\input{config/document_wrapper.tex}
+
+\widowpenalty=10000 % zapobiega występowaniu ostatnich linii akapitu na początku nowej strony
+\clubpenalty=10000 % zapobiega występowaniu pierwszych linii akapitu na początku nowej strony
+\vbadness=99999 % zapobiega ostrzeżeniom o niepełnych liniach
+
+\documentwrapper{
+  % rozdziały
+  \input{chapter/01.tex}
+  \input{chapter/02.tex}
+  \input{chapter/03.tex}
+  \input{chapter/04.tex}
+  \input{chapter/05.tex}
+  \input{chapter/06.tex}
+}{
+  % dodatki
+  \input{appendix/01.tex}
+}

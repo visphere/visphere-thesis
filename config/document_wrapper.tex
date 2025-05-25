@@ -1,0 +1,48 @@
+% wrapper dla dokumentu, możliwość dodania elementów do 2 sekcji (rozdziały i dodatki)
+\newcommand{\documentwrapper}[2]{
+\newcounter{noNumberPages}
+
+\begin{document}
+
+\frontmatter % przed tekstem głównym, bez numeracji
+\input{section/titlepage.tex}
+
+\pagestyle{empty}
+\cleardoublepage % nowa strona
+
+\rmfamily\normalfont % reset fontów ze strony tytułowej
+
+\input{section/abstract.tex}
+
+% spis treści (pusty styl strony bez nagłówka i stopki)
+\addtocontents{toc}{\protect\thispagestyle{empty}}
+\tableofcontents
+
+\setcounter{noNumberPages}{\value{page}}
+
+% główna część dokumentu
+\mainmatter
+
+\pagestyle{empty}
+\cleardoublepage % nowa strona
+
+\pagestyle{headerAndFooter} % strony z nagłówkiem i stopką
+
+#1 % tutaj rozdziały
+
+% końcowa część dokumentu
+\backmatter
+
+\printbibliography
+\addcontentsline{toc}{chapter}{Bibliografia} % dodanie bibliografii do spisu treści
+
+% dodatki
+\begin{appendices}
+  #2 % tutaj dodatki
+
+  \listoffigures
+  \addcontentsline{toc}{chapter}{Spis rysunków}
+\end{appendices}
+
+\end{document}
+}

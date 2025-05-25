@@ -1,0 +1,45 @@
+\makechapter{Wstęp}{chap:introduction}
+
+Człowiek z definicji jest istotą społeczną, toteż potrzeba komunikacji jest u niego dość silna. Od wieków wymyślano
+różne sposoby i techniki komunikacji na odległość. Początkowo komunikacja z wykorzystaniem listów była dość powolna i
+mało bezpieczna. Wraz z rozwojem techniki, wynalezieniu telegrafu oraz stopniowemu powiększaniu się infrastruktury
+telekomunikacyjnej wymiana wiadomości stawała się szybsza, przyjemniejsza oraz bezpieczniejsza. Rozwój Internetu w
+latach 90 dwudziestego wieku wprowadził nowe możliwości z zakresu komunikacji dzięki zwiększeniu prędkości transmisji i
+możliwości multimedialnych. Wówczas powstał jeden z najpopularniejszych polskich komunikatorów: Gadu-gadu który (na
+dzień tworzenia tej pracy) wciąż istnieje na rynku \cite{bib:mszutiak}. W świecie, jaki jest obecnie znany, komunikatory
+internetowe zajmują mocne miejsce na rynku aplikacji użytkowych.
+
+Wraz z pojawieniem się pandemii Covid-19 w 2019 roku zapotrzebowanie rynkowe na komunikatory znacząco się zwiększyło. Z
+uwagi na obostrzenia wynikające ze stanu epidemiologicznego, wszelkiego rodzaju formy wymiany informacji, spotkań oraz
+rozmowy z najbliższymi odbywały się z użyciem technik komunikacji na odległość. Niektóre z aplikacji oferujących wyżej
+wymienione techniki nie były gotowe na tak duże obciążenie generowane przez szkoły, firmy lub inne instytucje
+korzystające w tym samym czasie z ich usług. Skutkowało to utrudnieniem w komunikacji, bądź nierzadko przerwami w ich
+działaniu, znacząco utrudniając komunikację.
+
+Motywacją do stworzenia projektu o podanej tematyce było opracowanie prostego systemu do wymiany wiadomości, lecz
+możliwie jak najbardziej skalowanego, bezpiecznego i przygotowanego do stosunkowo łatwego wdrożenia w środowiskach
+rozproszonych na wielu serwerach. Projekt taki może stanowić bazę do bardziej rozbudowanego systemu bądź zapewniać
+prosty system do wymiany wiadomości w czasie rzeczywistym. W celu stworzenia projektu wykorzystano szereg nowoczesnych
+technologii stworzonych i aktywnie wykorzystywanych przez gigantów technologicznych takich jak \textit{Netflix} i
+\textit{LinkedIn}.
+
+\makesection{Cel i zakres projektu}{sec:project-purpose}
+
+Celem projektu było opracowanie skalowalnego systemu wymiany wiadomości w czasie rzeczywistym wykorzystującego
+architekturę mikroserwisów. Komunikacja pomiędzy usługami warstwy serwera została zapewniona przy użyciu oprogramowania
+\textit{Apache Kafka} implementującego model komunikacji sterowanej zdarzeniami. Z kolei do wzajemnej dwukierunkowej
+wymiany danych w czasie rzeczywistym między klientem a serwerem skorzystano z protokołów \textit{Websocket} i
+\textit{STOMP}.
+
+\makesection{Założenia funkcjonalne}{sec:functional-assumptions}
+
+W podstawowy swoich założeniach system ma umożliwiać wysyłanie wiadomości w obrębie kanału tekstowego w tym wiadomości w
+formie załączonych plików (tekstowych, graficznych, audio, wideo itp.). Kanał taki znajduje się na serwerze zwanym dalej
+\textit{Sferą}, na którą składają się wyżej wymienione kanały tekstowe i użytkownicy. Każda Sfera posiada jednego
+administratora zdolnego do tworzenia, modyfikowania oraz usuwania kanałów tekstowych. Dołączanie użytkowników do
+\textit{Sfery} umożliwione jest dzięki linkowi z zaproszeniem generowanym przez administratora z możliwością określenia
+czasu jego wygaśnięcia. Administrator \textit{Sfery} ma możliwość wyrzucenia oraz zablokowania użytkownika. Ponadto
+aplikacja umożliwia podstawowe elementy uwierzytelniania i autoryzacji tj. logowanie, rejestrację, reset hasła przy
+pomocy adresu email oraz logowanie społecznościowe (z wykorzystaniem konta \textit{Google} lub \textit{Facebook}). Co
+więcej, konto w systemie można zabezpieczyć poprzez weryfikację wieloetapową z użyciem jednorazowych kodów aplikacji
+\textit{Microsoft Authenticator} lub \textit{Google Authenticator}.

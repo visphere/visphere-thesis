@@ -1,0 +1,48 @@
+\makechapter{Wykorzystane oprogramowanie}{chap:used-software}
+
+\makesection{Wykorzystane oprogramowanie do rozwoju warstwy klienta}{sec:client-software}
+
+W celu stworzenia warstwy klienta składającego się na główny projekt \textit{SPA} napisany we \textit{frameworku}
+\textit{Angular} oraz podprojekt zawierający style biblioteki \textit{Tailwind} wraz z dodatkową konfiguracją
+\textit{Webpack} skorzystano z programu \textit{Visual Studio Code}. Jest to lekki edytor kodu źródłowego dostępnego na
+systemy \textit{Windows}, \textit{MacOS} oraz \textit{Linux}. Możliwe jest instalowanie do niego rozszerzeń
+integrujących elementy innych języków oraz frameworków (takie jak kompilatory czy walidatory składni) \cite{bib:vscode}.
+W powyższym projekcie skorzystano głównie z rozszerzeń ekosystemu \textit{Angular} oraz \textit{Tailwind}
+umożliwiających sprawdzanie poprawności kodu przed jego interpretacją co znacznie usprawniło i przyspieszyło rozwój
+systemu.
+
+\makesection{Wykorzystane oprogramowanie do rozwoju warstwy serwera}{sec:server-software}
+
+W celu stworzenia warstwy serwerowej wykorzystano programy firmy \textit{JetBrains}. Wśród nich znajduje się flagowy
+produkt tej firmy — \textit{Intellij Idea}. Jest to program typu \textit{IDE} stosowany do pisania, testowania oraz
+kompilowania programów uruchamianych na \textit{JVM} (napisanych w \textit{Javie}, ale również w innych językach takich
+jak \textit{Groovy} czy \textit{Kotlin}). Podobnie jak \textit{Visual Studio Code} umożliwia instalowanie wtyczek
+dodających nowe funkcje \cite{bib:intellij-idea}. W projekcie skorzystano ze wtyczki \textit{Apache Kafka} pozwalającej
+na obserwację napływających danych do strumieni co znacznie usprawniło walidację poprawnego przepływu danych między
+serwisami.
+
+Dodatkowo skorzystano z programu \textit{DataGrip} (również od firmy \textit{JetBrains}) będącym kompleksowym
+środowiskiem bazodanowym. Aplikacja ta umożliwia podpięcie wielu różnych baz danych (różnych typów o różnych
+specyfikacjach) i sprawnie nimi zarządzanie \cite{bib:intellij-datagrip}. Funkcja ta była dużym atutem w trakcie rozwoju
+aplikacji ze względu na wykorzystaną architekturę, która narzuca stosowanie odrębnej bazy danych dla każdego
+mikroserwisu.
+
+\makesection{System kontroli wersji \textit{GIT}}{sec:git}
+
+W rozwoju całego systemu korzystano z systemu kontroli wersji \textit{GIT}. System kontroli wersji to oprogramowanie
+zapisujące historię edycji plików z kodem źródłowym. Sam system \textit{GIT} został stworzony przez Linusa Torvaldsa,
+twórcę jądra systemu operacyjnego \textit{Linux} \cite{bib:git-history}. Dodatkowo system taki jest rozproszony, dzięki
+czemu umożliwia pracę na wielu różnych gałęziach nad różnymi funkcjami systemu w tym samym czasie
+\cite{bib:git-overview}. Stał się on bardzo przydatny podczas dodawania nowych funkcjonalności do dosyć złożonego
+architektoniczne projektu przy pracy z wykorzystaniem dwóch komputerów.
+
+\makesection{System konteneryzacji \textit{Docker}}{sec:docker}
+
+W celu ułatwienia przyszłego wdrożenia systemu w środowiskach produkcyjnych skorzystano z systemu konteneryzacji
+\textit{Docker}. Sam system \textit{Docker} powstał jako szybsza i wydajniejsza alternatywa dla tradycyjnych systemów
+wirtualizacji. Główne dwa elementy w systemie \textit{Docker} to obraz i kontener. Obraz zawiera cały kod źródłowy i
+wszystkie pliki niezbędne do uruchomienia aplikacji. Kontener zaś to odseparowane środowisko (tzw.
+\textit{piaskownica}), które umożliwia uruchomienie wcześniej przygotowanego obrazu jako niezależny proces na komputerze
+hosta \cite{bib:docker-overview}. Umożliwia to przede wszystkim uruchamianie wielu instancji tej samej aplikacji z taką
+samą konfiguracją niezależnie od zastosowanej maszyny, co jest częstą praktyką w systemach rozproszonych opartych o
+architekturę mikroserwisową w celu równoważenia obciążenia.

@@ -1,0 +1,43 @@
+\makechapter{Podsumowanie i wnioski}{chap:outro}
+
+W zrealizowanym projekcie wykorzystano szereg technologii umożliwiających stworzenie wydajnego i przygotowanego na
+skalowanie horyzontalne systemu czatu. Zastosowana architektura mikroserwisów pozwoliła na rozdzielenie funkcjonalne i
+izolację składowych fragmentów systemu co znacznie ułatwi późniejszą jego rozbudowę. Co więcej architektura taka jest
+powszechnie używana w średnich i dużych systemach komercyjnych z uwagi na szereg zalet jakie oferuje. Jedną z nich jest
+możliwość uruchamiania wielu instancji tego samego mikroserwisu w celu rozłożenia obciążenia generowanego przez wielu
+użytkowników jednocześnie. Dodatkowo każdy taki serwis posiada osobną bazę danych, co uniezależnia pojedyncze
+podjednostki systemu i umożliwia dodatkową jej replikację, jeśli jedna okaże się niewystarczająca. Zastosowana baza
+danych \textit{Cassandra} w systemie czatu jest znana ze swojej odporności na błędy dzięki powielaniu danych w kilku
+węzłach skutecznie eliminując możliwość ich utraty \cite{bib:cassandra-overview}. Dodatkowo zastosowany w nich mechanizm
+partycjonowania pozwala na równomierny rozkład danych na zdecentralizowanych serwerach. W celu zapewnienia szybkiej i
+niezawodnej komunikacji między elementami infrastruktury serwera skorzystano z metody sterowanej zdarzeniami
+wykorzystującej oprogramowanie \textit{Apache Kafka} co znacznie przyspieszyło i zwiększyło możliwości skalowania
+takiego systemu. Z kolei w komunikacji z klientem skorzystano z protokołów \textit{Websocket} oraz \textit{STOMP}
+umożliwiających dwukierunkową wymianę wiadomości w czasie rzeczywistym, co jest kluczowym aspektem w nowoczesnych i
+interaktywnych aplikacjach czatowych.
+
+Oprócz szeregu zalet, największą wadą architektury mikroserwisowej zaobserwowaną podczas tworzenia systemu jest jej
+stosunkowo duża złożoność. Wynika to z potrzeby stosowania mechanizmów które nie występują (lub występują w nieznacznym
+stopniu) w typowej architekturze monolitycznej. Skutkiem posiadania niezbędnych dodatkowych usług jest wysokie
+zapotrzebowanie na moc obliczeniową co może przyczynić się do zwiększenia kosztów utrzymania infrastruktury. Samo
+zastosowanie \textit{Apache Kafka} i architektury sterowanej zdarzeniami zamiast standardowych zapytań \textit{HTTP} w
+komunikacji między komponentami serwera generuje dodatkowe koszty obliczeniowe z uwagi na potrzebę uruchomionego brokera
+\textit{Kafka} i serwera \textit{Zookeeper} jedocześnie oraz może stanowić wyzwanie dla nowych programistów
+wkraczających w projekt z uwagi na większy stopień skomplikowania \cite{bib:kafka-overview}. Mimo wszystko odpowiednio
+wdrożona architektura mikroserwisowa w środowisku produkcyjnym może obsłużyć setki tysięcy użytkowników jednocześnie.
+
+\makesection{Perspektywy rozwoju}{sec:futher-progress}
+
+W celu rozbudowy systemu i poprawy komfortu użytkowników przewiduje się stworzenie aplikacji mobilnej oraz desktopowej
+posiadającej większość funkcjonalności zawartych w konwencjonalnej wersji dostępnej na przeglądarkę internetową.
+Dodatkowo rozważane jest stworzenie dodatkowych elementów w interfejsie użytkownika takich jak: informacja o aktualnym
+statusie (online, offline, nie przeszkadzać itp.) oraz system rang umożliwiający dodawanie do nich wybranych uprawnień i
+przydzielanie tych rang do użytkowników.
+
+Architektura systemu w stworzonej konfiguracji korzysta z konteneryzacji \textit{Docker}. Dobrym kolejnym krokiem byłoby
+skonfigurowanie do niej środowiska orkiestracji kontenerów takiego jak np. \textit{Kubernetes} w celu automatycznego
+uruchamiania replik instancji mikroserwisów w przypadku zwiększenia ruchu. Dodatkowo przewiduje się wprowadzenie jednego
+spójnego zcentralizowanego systemu do zapisu logów aplikacji korzystającego ze stosu \textit{ELK}
+(\textit{ElasticSearch}, \textit{LogStash}, \textit{Kibana}). Rozważa się również przyszłe umieszczenie systemu w
+usłudze \textit{Cloud Computing} takiej jak \textit{AWS} oraz zaimplementowanie procedury \textit{CI/CD} przy pomocy
+rozwiązania \textit{Terraform} oferowanego przez firmę \textit{HashiCorp}.

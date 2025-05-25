@@ -1,0 +1,46 @@
+\definecolor{mediumgray}{rgb}{0.3, 0.4, 0.4}
+\definecolor{mediumblue}{rgb}{0.0, 0.0, 0.8}
+\definecolor{forestgreen}{rgb}{0.13, 0.55, 0.13}
+
+\lstset{
+  numbers=left, % numery linii po lewej stronie
+  numbersep=10pt, % odstęp numerów od kodu: 10 punktów
+  numberstyle=\color{black}, % numery linii: czarne (rozmiar z basicstyle)
+  basicstyle=\ttfamily\footnotesize, % podstawowy styl: czcionka maszynowa, rozmiar \footnotesize
+  breaklines=false, % długie linie NIE będą automatycznie łamane (nadpisuje wcześniejsze 'true')
+  breakatwhitespace=false, % jeśli breaklines=true, łamie linie w dowolnym miejscu (nie tylko na spacjach)
+  fontadjust=true, % uspójnienie wielkości czcionki
+  showstringspaces=false, % spacje wewnątrz ciągów znaków (stringów) wyświetlane normalnie
+  showspaces=false, % spacje w kodzie (poza stringami) wyświetlane normalnie
+  showtabs=false, % znaki tabulacji konwertowane na spacje (zgodnie z tabsize), nieoznaczone
+  showlines=true, % w pewnych sytuacjach może wizualizować "puste" lub kontynuowane linie (efekt często subtelny)
+  xleftmargin=20pt,  % lewy margines/wcięcie całego bloku listingu: 20 punktów
+  captionpos=b % pozycja podpisu (dół)
+  columns=fullflexible, % elastyczne dopasowanie szerokości znaków w kolumnach
+  commentstyle=\color{mediumgray}\upshape, % komentarze: kolor 'mediumgray', krój prosty
+  identifierstyle=\color{black}, % identyfikatory (np. nazwy zmiennych): kolor czarny
+  stringstyle=\color{forestgreen}, % ciągi znaków (stringi): kolor 'forestgreen'
+  keywordstyle=\color{mediumblue}, % słowa kluczowe: kolor 'mediumblue'
+  extendedchars=true, % umożliwia poprawne wyświetlanie znaków spoza ASCII
+  fontadjust=true, % próbuje dostosować optycznie rozmiary czcionek między różnymi stylami
+  keepspaces=true, % zachowuje wszystkie spacje w kodzie (w tym wielokrotne)
+  upquote=true, % zapewnia poprawne wyświetlanie prostych apostrofów (') i cudzysłowów (")
+  tabsize=2, % szerokość znaku tabulacji: 2 spacje
+  title=\lstname, % używa nazwy pliku jako tytułu dla \lstinputlisting
+  rulecolor=\color{black} % kolor linii ramki (jeśli ramka jest włączona, np. frame=single)
+}
+
+\lstdefinestyle{JSES6Base}{
+  keywords={
+      break, continue, delete, else, for, function, if, in, new, return, this, typeof, var, void, while, with,
+      false, null, true, boolean, number, undefined, Array, Boolean, Date, Math, Number, String, Object,
+      eval, parseInt, parseFloat, escape, unescape, await, async, case, catch, class, const, default, do, enum, export,
+      extends, finally, from, implements, import, instanceof, let, static, super, switch, throw, try
+    },
+  sensitive,
+  morecomment=[s]{/*}{*/},
+  morecomment=[l]//,
+  morecomment=[s]{/**}{*/},
+  morestring=[b]',
+  morestring=[b]"
+}

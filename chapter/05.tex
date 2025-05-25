@@ -1,0 +1,150 @@
+\makechapter{Weryfikacja i walidacja}{chap:verification-and-validation}
+
+\makesection{Testy aplikacji klienta}{sec:client-tests}
+
+Testy klienta w głównej mierze polegały na manualnym sprawdzeniu poprawności działania zaimplementowanych
+funkcjonalności uwzględniając poprawne wyświetlanie interfejsu użytkownika oraz walidację formularzy. W bardziej
+znaczących miejscach zdecydowano się napisać testy jednostkowe z wykorzystaniem biblioteki \textit{Jasmine} i
+\textit{Karma}. Przykładowy test sprawdzający poprawność sanityzacji\footnote{Sanityzacja (ang. \english{sanitization})
+  — usunięcie z danych wejściowych (najczęściej wprowadzanych przez użytkownika) elementów, które mogą wprowadzić
+  niezamierzone zmiany w systemie \cite{bib:validation-and-sanitation}.} wartości wejściowych widoczny jest na listingu
+\lisref{lis:client-test}. Trzy najważniejsze funkcje to \verb|describe|, \verb|beforeEach| oraz \verb|it|. Funkcja
+\verb|describe| odpowiada za identyfikację testu pośród innych testów jednostkowych aplikacji. Funkcja \verb|it|
+symbolizuje pojedynczą jednostkę testującą, w tym przypadku usunięcie potencjalnie szkodliwego kodu z ciągu znaków.
+Funkcja \verb|beforeEach| natomiast wykonuje się przed wszystkimi jednostkami testującymi, umożliwiając ustawienie
+początkowych parametrów testowanego komponentu. W przykładowym teście w funkcji \verb|beforeEach| tworzony jest moduł
+testowy zawierający główny moduł aplikacji \verb|AppModule| oraz tworzona jest nowa instancja testowanego komponentu.
+Natomiast w funkcji \verb|it| przy użyciu procedury \verb|expect| przyrównywane są dwie wartości do siebie w celu
+weryfikacji poprawności przeprowadzonej sanityzacji.
+%
+\begin{lstlisting}[style=JSES6Base,label={lis:client-test},caption={Przykładowy test jednostkowy w aplikacji klienta}]
+describe('SanitationPipe', () => {
+  let pipe: SanitationPipe;
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      imports: [AppModule],
+    }).compileComponents();
+    pipe = new SanitationPipe(TestBed.inject(DomSanitizer));
+  });
+  it('should remove scripts value', () => {
+    const mockedExploit = "
+      <script>
+        alert('hello! I am very angry exploit :)')
+      </script>
+      <h2>I'm polite.</h2>
+    ";
+    const result = pipe.transform(mockedExploit);
+    expect(result).toBe("<h2>I'm polite.</h2>");
+  });
+});
+\end{lstlisting}
+
+Na \imgref{fig:karma-output} widoczny jest wynik wszystkich testów aplikacji klienta. Każdy komponent posiada
+przynajmniej jeden test podstawowy sprawdzający poprawność jego tworzenia, stąd tak duża ich ilość. Co więcej, dzięki
+wykorzystaniu narzędzia \textit{Husky}, system nie pozwoli umieścić zmian na zdalnym repozytorium \textit{GIT}, jeśli
+przynajmniej jeden test nie zostanie pozytywnie zakończony. Eliminuje to możliwość wprowadzenia wadliwie działającego
+kodu na etapie rozwoju aplikacji przed umieszczeniem jej na serwerze produkcyjnym.
+%
+\begin{figure}[H]
+  \centering
+  \safeincludepng{5_1/0_1_karma_output}{1}
+  \caption{Wynik wszystkich testów aplikacji klienta w konsoli.}
+  \label{fig:karma-output}
+\end{figure}
+
+\makesection{Testy architektury serwera}{sec:server-tests}
+
+Większość architektury serwera (punkty końcowe \textit{REST}) zostały przetestowane z użyciem narzędzia
+\textit{Postman}. Jest to program umożliwiający sprawdzenie poprawności zapytań \textit{HTTP}. Jego specyfika działania
+powoduje, że jest on również interaktywną dokumentacją do projektu. Umożliwia deklarowanie zmiennych, które mogą
+przyjmować inne wartości dla różnych środowisk oraz wprowadza możliwość uwierzytelniania zasobów przy pomocy
+\textit{JWT} co dodatkowo usprawnia testowanie. Same zapytania przechowywane są w folderach, wprowadzając porządek, co
+jest istotne przy dużych projektach programistycznych. Na \imgref{fig:postman} widoczne jest okno programu
+\textit{Postman} z przykładowym zapytaniem \textit{HTTP} i jego rezultatem.
+%
+\begin{figure}[H]
+  \centering
+  \safeincludepng{5_2/0_1_postman}{1}
+  \caption{Okno programu \textit{Postman} z widocznym zapytaniem \textit{HTTP}.}
+  \label{fig:postman}
+\end{figure}
+
+Dodatkowo do poszczególnych fragmentów kodu w mikroserwisach zostały napisane testy jednostkowe z wykorzystaniem
+bibliotek \textit{Spring Boot Starter Test} oraz \textit{JUnit}. Na listingu \lisref{lis:java-test} widoczny jest
+przykład testu jednostkowego sprawdzającego poprawność działania metody konwertującej nazwę \textit{Sfery} lub
+użytkownika na inicjały wyświetlane w formie grafiki (domyślne zdjęcie profilowe).
+%
+\begin{lstlisting}[
+  language=Java,
+  label={lis:java-test},
+  caption={Test jednostkowy metody \texttt{parseGuildNameInitials()}.}
+]
+@Test
+void parseGuildNameInitials() {
+  // given
+  final String[] mockedNames = {
+    "testguild123", "test test123", "GGD2"
+  };
+  final String[] expectedResults = { "t", "tt", "G" };
+
+  // when
+  final String[] actualResults = new String[expectedResults.length];
+  for (int i = 0; i < mockedNames.length; i++) {
+    actualResults[i] = new String(
+      StringParser.parseGuildNameInitials(mockedNames[i])
+    );
+  }
+
+  // then
+  assertArrayEquals(expectedResults, actualResults);
+}
+\end{lstlisting}
+
+Metoda ta (listing \lisref{lis:java-method}) rozdziela ciąg wejściowy względem delimitera (w tym przypadku znaku spacji)
+a następnie pobiera pierwszy znak każdego rozdzielonego elementu. Jeśli ilość elementów jest mniejsza od dwóch, pobiera
+jedynie pierwszy znak. Każdy test jednostkowy w aplikacji podzielony jest na 3 etapy. Są to odpowiednio \verb|given|,
+\verb|when| i \verb|then|. \verb|Given| symbolizuje dane wejściowe oraz oczekiwany rezultat, \verb|when| jest
+uruchomieniem funkcji testującej a \verb|then| sprawdzeniem wyników. Jeśli dane wyjściowe nie będą zgodnie z
+oczekiwanymi, test zwróci błąd z widocznym stosem wywołań (\imgref{fig:junit-error}). Jeśli natomiast test zostanie
+zakończony pomyślnie, zostanie zwrócona wartość 0 oznaczająca zakończenie operacji sukcesem.
+%
+\begin{lstlisting}[language=Java,label={lis:java-method},caption={Ciało metody \texttt{parseGuildNameInitials()}.}]
+public static char[] parseGuildNameInitials(String guildName) {
+  final String[] parts = guildName.split(StringUtils.SPACE);
+  final char[] initials;
+  if (parts.length > 1) {
+    initials = new char[2];
+    for (int i = 0; i < 2; i++) {
+      initials[i] = parts[i].charAt(0);
+    }
+  } else {
+    initials = new char[]{ parts[0].charAt(0) };
+  }
+  return initials;
+}
+\end{lstlisting}
+%
+\begin{figure}[H]
+  \centering
+  \safeincludepng{5_2/0_2_junit_error}{1}
+  \caption{Wynik testu z widocznym błędem.}
+  \label{fig:junit-error}
+\end{figure}
+
+\makesection{Napotkane problemy}{sec:issues}
+
+\makesubsection{
+  Przekazywanie stanu pomiędzy sesje Websocket w wielu instancjach mikroserwisu \textit{chat-service}
+}{sub:ws-state-issue}
+
+W protokole \textit{Websocket} w przeciwieństwie do \textit{HTTP} nie jest możliwym zaprojektowania komunikacji
+bezstanowej z uwagi na sposób jego działania (ciągłość działania poprzez otwarty kanał komunikacyjny z serwerem). Z tego
+powodu przy uruchomionych wielu instancjach mikroserwisu czatu, klient mógł się przyłączyć do sesji \textit{Websocket}
+do której nie był przyłączony odbiorca, co skutkowało brakiem propagowania wiadomości kanału tekstowego. W celu
+rozwiązania tego problemu skorzystano z usługi propagacji przy użyciu brokera wiadomości \textit{RabbitMQ}. W działaniu
+przypomina oprogramowanie \textit{Apache Kafka}, lecz w przeciwieństwie do używania własnego protokoły komunikacji
+opartego o \textit{TCP}, implementuje on interfejs \textit{JMS} oraz wspiera protokół \textit{STOMP}, co jest kluczową
+zaletą z uwagi na wykorzystanie jego przy komunikacji z użyciem protokołu \textit{Websocket}. Sam \textit{RabbitMQ}
+pośredniczy pomiędzy klientem \textit{Websocket} a serwerem tworząc pule połączeń oraz propagując wiadomości wysyłane
+przez użytkownika do wszystkich aktywnych sesji w wielu instancjach mikroserwisu, a co za tym idzie aktywnych
+użytkowników zainteresowanych odbiorem (na tym samym kanale tekstowym) \cite{bib:real-time-app-scaling}.
